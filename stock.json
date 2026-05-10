@@ -1,0 +1,24 @@
+{
+  "categories": {
+    "steam": {
+      "label": "Steam Keys",
+      "tier": "free",
+      "stock": []
+    },
+    "roblox": {
+      "label": "Roblox Gift Cards",
+      "tier": "free",
+      "stock": []
+    },
+    "xbox": {
+      "label": "Xbox Game Pass",
+      "tier": "paid",
+      "stock": []
+    },
+    "psn": {
+      "label": "PSN Codes",
+      "tier": "paid",
+      "stock": []
+    }
+  }
+}
