@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const STOCK_FILE = path.join(__dirname, '../data/stock.json');
+const STOCK_FILE = path.join(__dirname, 'stock.json');
 
 function readStock() {
   const raw = fs.readFileSync(STOCK_FILE, 'utf8');

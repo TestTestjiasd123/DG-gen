@@ -2,8 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const stock = require('../bot/stockManager');
-const settings = require('../bot/settingsManager');
+const stock = require('./stockManager');
+const settings = require('./settingsManager');
 
 const app = express();
 const PORT = process.env.PORT || 3000;

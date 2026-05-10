@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const SETTINGS_FILE = path.join(__dirname, '../data/settings.json');
+const SETTINGS_FILE = path.join(__dirname, 'settings.json');
 
 const DEFAULTS = {
   // Bot identity

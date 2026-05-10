@@ -2,10 +2,10 @@
   "name": "dg-gen",
   "version": "1.0.0",
   "description": "DG Gen - Game Code Delivery Bot",
-  "main": "bot/index.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node bot/index.js",
-    "website": "node website/server.js"
+    "start": "node index.js",
+    "website": "node server.js"
   },
   "dependencies": {
     "discord.js": "^14.14.1",
