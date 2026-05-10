@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DG Gen — Admin Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#090b0f;--surface:#0f1218;--card:#141820;--border:#1e2530;--border-b:#2a3445;
+  --text:#e8edf5;--muted:#5a6478;--accent:#4f8ef7;--ag:rgba(79,142,247,.15);
+  --green:#3ecf6e;--gdim:rgba(62,207,110,.1);--yellow:#f5c842;--ydim:rgba(245,200,66,.1);
+  --red:#f05252;--rdim:rgba(240,82,82,.1);--r:10px;--rs:6px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.3;pointer-events:none;z-index:0}
+
+/* LOGIN */
+#login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:100;background:var(--bg)}
+.lbox{background:var(--card);border:1px solid var(--border-b);border-radius:16px;padding:48px 40px;width:380px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.6);position:relative}
+.lbox::before{content:'';position:absolute;top:-1px;left:20%;right:20%;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);border-radius:99px}
+.llogo{font-size:28px;font-weight:800;margin-bottom:6px}.llogo span{color:var(--accent)}
+.lsub{color:var(--muted);font-size:13px;margin-bottom:28px}
+.lbox input{width:100%;background:var(--surface);border:1px solid var(--border-b);border-radius:var(--rs);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;padding:12px 16px;outline:none;transition:border-color .2s;margin-bottom:12px}
+.lbox input:focus{border-color:var(--accent)}
+.lerr{color:var(--red);font-size:12px;margin-top:8px;display:none}
+
+/* BUTTONS */
+.btn{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;border:none;border-radius:var(--rs);cursor:pointer;transition:all .15s;padding:10px 20px}
+.btn-p{background:var(--accent);color:#fff}.btn-p:hover{opacity:.85}.btn-p:active{transform:scale(.98)}
+.btn-o{background:transparent;border:1px solid var(--border-b);color:var(--muted)}.btn-o:hover{color:var(--text);border-color:var(--muted)}
+.btn-g{background:transparent;border:1px solid rgba(62,207,110,.3);color:var(--green)}.btn-g:hover{background:var(--gdim)}
+.btn-r{background:transparent;border:1px solid rgba(240,82,82,.3);color:var(--red)}.btn-r:hover{background:var(--rdim)}
+.btn-a{background:transparent;border:1px solid rgba(79,142,247,.3);color:var(--accent)}.btn-a:hover{background:var(--ag)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-w{width:100%}
+
+/* APP */
+#app{display:none;position:relative;z-index:1}
+header{display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid var(--border);background:rgba(9,11,15,.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:50}
+.hlogo{font-size:20px;font-weight:800}.hlogo span{color:var(--accent)}
+.hbadge{background:var(--ag);color:var(--accent);border:1px solid rgba(79,142,247,.2);border-radius:99px;font-size:11px;font-weight:700;padding:3px 10px;text-transform:uppercase;letter-spacing:.5px}
+.hlive{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* NAV TABS */
+nav{display:flex;gap:4px;padding:0 32px;border-bottom:1px solid var(--border);background:rgba(9,11,15,.8)}
+.tab{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;padding:14px 18px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;display:flex;align-items:center;gap:7px}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-icon{font-size:15px}
+
+/* MAIN */
+main{max-width:1060px;margin:0 auto;padding:32px}
+.page{display:none}.page.active{display:block}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.scard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;position:relative;overflow:hidden}
+.scard::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);opacity:.5}
+.scard.g::after{background:var(--green)}.scard.y::after{background:var(--yellow)}.scard.r::after{background:var(--red)}
+.slabel{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.sval{font-size:30px;font-weight:800;letter-spacing:-1px}
+
+/* SECTION HEADER */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.stitle{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.sicon{width:28px;height:28px;background:var(--surface);border:1px solid var(--border-b);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:20px}
+.card-flush{padding:0;overflow:hidden}
+
+/* FORM */
+.frow{display:grid;gap:12px}
+.frow.c2{grid-template-columns:1fr 1fr}
+.frow.c3{grid-template-columns:1fr 1fr 1fr}
+.frow.c4{grid-template-columns:1fr 1fr 1fr auto}
+.frow.cauto{grid-template-columns:1fr 1fr auto auto}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.field input,.field select,.field textarea{background:var(--surface);border:1px solid var(--border-b);border-radius:var(--rs);color:var(--text);font-family:'Syne',sans-serif;font-size:13px;padding:10px 14px;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+.field select option{background:var(--card)}
+.field textarea{resize:vertical;min-height:72px;line-height:1.5}
+.field input[type=color]{padding:4px 8px;height:40px;cursor:pointer}
+.hint{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* SETTINGS GROUPS */
+.sg{margin-bottom:28px}
+.sg-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px}
+.color-row{display:flex;align-items:center;gap:10px}
+.color-preview{width:32px;height:32px;border-radius:6px;border:1px solid var(--border-b);flex-shrink:0}
+
+/* TABLE */
+.ctable{width:100%;border-collapse:collapse}
+.ctable th{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;text-align:left;padding:10px 16px;border-bottom:1px solid var(--border)}
+.ctable td{padding:14px 16px;border-bottom:1px solid var(--border);vertical-align:middle}
+.ctable tr:last-child td{border-bottom:none}
+.ctable tr:hover td{background:rgba(255,255,255,.015)}
+
+/* BADGES */
+.tbadge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;text-transform:uppercase;letter-spacing:.4px}
+.tbadge.free{background:var(--gdim);color:var(--green);border:1px solid rgba(62,207,110,.2)}
+.tbadge.paid{background:var(--ydim);color:var(--yellow);border:1px solid rgba(245,200,66,.2)}
+.spill{background:var(--surface);border:1px solid var(--border-b);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:4px 10px;border-radius:99px}
+.spill.empty{color:var(--red);border-color:rgba(240,82,82,.3);background:var(--rdim)}
+.arow{display:flex;gap:7px;align-items:center}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--card);border:1px solid var(--border-b);border-radius:14px;padding:28px;width:520px;max-width:90vw;max-height:82vh;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,0,.7);transform:translateY(10px);transition:transform .2s;position:relative}
+.overlay.open .modal{transform:translateY(0)}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:4px}
+.modal .msub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.modal textarea{width:100%;background:var(--surface);border:1px solid var(--border-b);border-radius:var(--rs);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:14px;height:200px;resize:vertical;outline:none;transition:border-color .2s;line-height:1.6}
+.modal textarea:focus{border-color:var(--accent)}
+.mactions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.mbtn-close{position:absolute;top:14px;right:14px;background:transparent;border:1px solid var(--border-b);color:var(--muted);border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:color .2s}
+.mbtn-close:hover{color:var(--text)}
+.stock-preview{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);max-height:110px;overflow-y:auto;line-height:1.7;margin-bottom:14px}
+.override-table{width:100%;border-collapse:collapse;margin-top:8px}
+.override-table td{padding:6px 4px;vertical-align:middle}
+.override-table input{background:var(--surface);border:1px solid var(--border-b);border-radius:var(--rs);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 10px;outline:none;width:90px;transition:border-color .2s}
+.override-table input:focus{border-color:var(--accent)}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--border-b);border-radius:var(--r);padding:13px 18px;font-size:13px;font-weight:600;z-index:999;transform:translateY(16px);opacity:0;transition:all .22s;display:flex;align-items:center;gap:10px;box-shadow:0 16px 40px rgba(0,0,0,.5)}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.success{border-color:rgba(62,207,110,.4);color:var(--green)}
+#toast.error{border-color:rgba(240,82,82,.4);color:var(--red)}
+
+/* EMPTY */
+.empty{text-align:center;padding:48px;color:var(--muted);font-size:13px}
+.empty .ei{font-size:32px;margin-bottom:10px}
+.empty .et{color:var(--text);font-weight:700;font-size:15px;margin-bottom:6px}
+
+/* SAVE BAR */
+.save-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--surface);border:1px solid var(--border-b);border-radius:var(--r);margin-bottom:20px}
+.save-bar span{font-size:13px;color:var(--muted)}
+.save-bar .sbtns{display:flex;gap:10px}
+
+@media(max-width:700px){.stats{grid-template-columns:1fr 1fr}.frow.c4,.frow.c3,.frow.c2,.frow.cauto{grid-template-columns:1fr}main{padding:16px}header,nav{padding-left:16px;padding-right:16px}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="lbox">
+    <div class="llogo">DG <span>Gen</span></div>
+    <div class="lsub">Admin Panel — Enter your password</div>
+    <input type="password" id="lpw" placeholder="Admin password" autocomplete="current-password">
+    <button class="btn btn-p btn-w" onclick="doLogin()">Sign In →</button>
+    <div class="lerr" id="lerr">Incorrect password.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="hlogo">DG <span>Gen</span></div>
+      <div class="hbadge">Admin</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="hlive"><div class="dot"></div><span>Live</span></div>
+      <button class="btn btn-o btn-sm" onclick="logout()">Log out</button>
+    </div>
+  </header>
+
+  <nav>
+    <button class="tab active" onclick="switchTab('stock',this)"><span class="tab-icon">📦</span>Stock</button>
+    <button class="tab" onclick="switchTab('bot',this)"><span class="tab-icon">🤖</span>Bot</button>
+    <button class="tab" onclick="switchTab('cooldowns',this)"><span class="tab-icon">⏱️</span>Cooldowns</button>
+    <button class="tab" onclick="switchTab('embeds',this)"><span class="tab-icon">🎨</span>Embeds</button>
+    <button class="tab" onclick="switchTab('messages',this)"><span class="tab-icon">💬</span>Messages</button>
+  </nav>
+
+  <main>
+
+    <!-- ═══ STOCK PAGE ═══ -->
+    <div class="page active" id="page-stock">
+      <div class="stats">
+        <div class="scard"><div class="slabel">Categories</div><div class="sval" id="s-cats">—</div></div>
+        <div class="scard g"><div class="slabel">Total Stock</div><div class="sval" id="s-total">—</div></div>
+        <div class="scard y"><div class="slabel">Free Stock</div><div class="sval" id="s-free">—</div></div>
+        <div class="scard"><div class="slabel">Paid Stock</div><div class="sval" id="s-paid">—</div></div>
+      </div>
+
+      <div class="sh">
+        <div class="stitle"><div class="sicon">＋</div>Add Category</div>
+      </div>
+      <div class="card">
+        <div class="frow cauto">
+          <div class="field"><label>Display Name</label><input id="nc-label" placeholder="e.g. Steam Keys"></div>
+          <div class="field"><label>Slug Key</label><input id="nc-key" placeholder="e.g. steam"></div>
+          <div class="field"><label>Tier</label>
+            <select id="nc-tier"><option value="free">🆓 Free</option><option value="paid">💎 Paid</option></select>
+          </div>
+          <div class="field" style="justify-content:flex-end"><label>&nbsp;</label>
+            <button class="btn btn-p" onclick="addCategory()">Add</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sh">
+        <div class="stitle"><div class="sicon">📦</div>Categories</div>
+        <button class="btn btn-a btn-sm" onclick="loadStock()">↻ Refresh</button>
+      </div>
+      <div class="card card-flush" id="cat-wrap">
+        <div class="empty"><div class="ei">📦</div><div class="et">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- ═══ BOT PAGE ═══ -->
+    <div class="page" id="page-bot">
+      <div class="save-bar"><span>Changes save immediately.</span><div class="sbtns"><button class="btn btn-o btn-sm" onclick="loadSettings()">↻ Reset</button><button class="btn btn-p btn-sm" onclick="saveSettings('bot')">Save Bot Settings</button></div></div>
+      <div class="sg">
+        <div class="sg-title">🤖 Identity</div>
+        <div class="frow c2">
+          <div class="field"><label>Bot Display Name</label><input id="s-botName" placeholder="DG Gen"></div>
+          <div class="field"><label>Status Activity Text</label><input id="s-botActivity" placeholder="Delivering game codes 🎮"></div>
+          <div class="field"><label>Activity Type</label>
+            <select id="s-botActivityType">
+              <option value="PLAYING">Playing</option><option value="WATCHING">Watching</option>
+              <option value="LISTENING">Listening to</option><option value="COMPETING">Competing in</option>
+            </select>
+          </div>
+          <div class="field"><label>Status</label>
+            <select id="s-botStatus">
+              <option value="online">🟢 Online</option><option value="idle">🌙 Idle</option>
+              <option value="dnd">⛔ Do Not Disturb</option><option value="invisible">👻 Invisible</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="sg">
+        <div class="sg-title">🔗 Discord IDs</div>
+        <div class="hint" style="margin-bottom:14px">These override .env values. Enable Developer Mode in Discord (Settings → Advanced) to copy IDs.</div>
+        <div class="frow c3">
+          <div class="field"><label>Free Channel ID</label><input id="s-freeChannelId" placeholder="Leave blank to use .env"></div>
+          <div class="field"><label>Paid Channel ID</label><input id="s-paidChannelId" placeholder="Leave blank to use .env"></div>
+          <div class="field"><label>Paid Role ID</label><input id="s-paidRoleId" placeholder="Leave blank to use .env"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ COOLDOWNS PAGE ═══ -->
+    <div class="page" id="page-cooldowns">
+      <div class="save-bar"><span>Changes save immediately.</span><div class="sbtns"><button class="btn btn-p btn-sm" onclick="saveSettings('cooldowns')">Save Cooldowns</button></div></div>
+      <div class="sg">
+        <div class="sg-title">⏱️ Global Tier Cooldowns</div>
+        <div class="frow c2">
+          <div class="field"><label>Free Tier Cooldown (minutes)</label><input id="s-freeCooldownMinutes" type="number" min="0" placeholder="1440"><div class="hint">1440 = 24 hours, 60 = 1 hour, 0 = no cooldown</div></div>
+          <div class="field"><label>Paid Tier Cooldown (minutes)</label><input id="s-paidCooldownMinutes" type="number" min="0" placeholder="60"></div>
+        </div>
+      </div>
+      <div class="sg">
+        <div class="sg-title">🎯 Per-Category Overrides</div>
+        <div class="hint" style="margin-bottom:14px">Override the global cooldown for specific categories. Leave blank to use the global tier setting.</div>
+        <div id="override-wrap">
+          <div class="empty"><div class="ei">⏳</div><div class="et">Loading categories…</div></div>
+        </div>
+        <div style="margin-top:14px;display:flex;justify-content:flex-end">
+          <button class="btn btn-p btn-sm" onclick="saveOverrides()">Save Overrides</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ EMBEDS PAGE ═══ -->
+    <div class="page" id="page-embeds">
+      <div class="save-bar"><span>Changes apply to all future bot messages.</span><div class="sbtns"><button class="btn btn-p btn-sm" onclick="saveSettings('embeds')">Save Embed Settings</button></div></div>
+
+      <div class="sg">
+        <div class="sg-title">🆓 Free Code Embed</div>
+        <div class="frow c2">
+          <div class="field"><label>Title <span style="color:var(--muted);font-weight:400">(use {category})</span></label><input id="s-freeEmbedTitle" placeholder="🆓 Your {category} Code"></div>
+          <div class="field"><label>Footer Text</label><input id="s-freeEmbedFooter"></div>
+          <div class="field">
+            <label>Embed Color</label>
+            <div class="color-row">
+              <input type="color" id="s-freeEmbedColor-picker" oninput="syncColor('freeEmbedColor')">
+              <input id="s-freeEmbedColor" placeholder="57f287" maxlength="6" oninput="syncPicker('freeEmbedColor')" style="font-family:'JetBrains Mono',monospace">
+              <div class="color-preview" id="prev-freeEmbedColor"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sg">
+        <div class="sg-title">💎 Paid Code Embed</div>
+        <div class="frow c2">
+          <div class="field"><label>Title <span style="color:var(--muted);font-weight:400">(use {category})</span></label><input id="s-paidEmbedTitle" placeholder="💎 Your {category} Code"></div>
+          <div class="field"><label>Footer Text</label><input id="s-paidEmbedFooter"></div>
+          <div class="field">
+            <label>Embed Color</label>
+            <div class="color-row">
+              <input type="color" id="s-paidEmbedColor-picker" oninput="syncColor('paidEmbedColor')">
+              <input id="s-paidEmbedColor" placeholder="f1c40f" maxlength="6" oninput="syncPicker('paidEmbedColor')" style="font-family:'JetBrains Mono',monospace">
+              <div class="color-preview" id="prev-paidEmbedColor"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sg">
+        <div class="sg-title">😔 Out of Stock Embed</div>
+        <div class="frow c2">
+          <div class="field"><label>Title</label><input id="s-outOfStockTitle"></div>
+          <div class="field">
+            <label>Embed Color</label>
+            <div class="color-row">
+              <input type="color" id="s-outOfStockColor-picker" oninput="syncColor('outOfStockColor')">
+              <input id="s-outOfStockColor" maxlength="6" oninput="syncPicker('outOfStockColor')" style="font-family:'JetBrains Mono',monospace">
+              <div class="color-preview" id="prev-outOfStockColor"></div>
+            </div>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Message <span style="color:var(--muted);font-weight:400">(use {category})</span></label><textarea id="s-outOfStockMessage"></textarea></div>
+        </div>
+      </div>
+
+      <div class="sg">
+        <div class="sg-title">🔒 No Access Embed</div>
+        <div class="frow c2">
+          <div class="field"><label>Title</label><input id="s-noAccessTitle"></div>
+          <div class="field">
+            <label>Embed Color</label>
+            <div class="color-row">
+              <input type="color" id="s-noAccessColor-picker" oninput="syncColor('noAccessColor')">
+              <input id="s-noAccessColor" maxlength="6" oninput="syncPicker('noAccessColor')" style="font-family:'JetBrains Mono',monospace">
+              <div class="color-preview" id="prev-noAccessColor"></div>
+            </div>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Message</label><textarea id="s-noAccessMessage"></textarea></div>
+        </div>
+      </div>
+
+      <div class="sg">
+        <div class="sg-title">✅ Confirm Embed</div>
+        <div class="frow c2">
+          <div class="field"><label>Title</label><input id="s-confirmEmbedTitle"></div>
+          <div class="field"><label>Message <span style="color:var(--muted);font-weight:400">(use {category})</span></label><input id="s-confirmEmbedMessage"></div>
+        </div>
+      </div>
+
+      <div class="sg">
+        <div class="sg-title">📋 Stock Command Embed</div>
+        <div class="frow c2">
+          <div class="field"><label>Title <span style="color:var(--muted);font-weight:400">(use {botName})</span></label><input id="s-stockEmbedTitle"></div>
+          <div class="field">
+            <label>Embed Color</label>
+            <div class="color-row">
+              <input type="color" id="s-stockEmbedColor-picker" oninput="syncColor('stockEmbedColor')">
+              <input id="s-stockEmbedColor" maxlength="6" oninput="syncPicker('stockEmbedColor')" style="font-family:'JetBrains Mono',monospace">
+              <div class="color-preview" id="prev-stockEmbedColor"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MESSAGES PAGE ═══ -->
+    <div class="page" id="page-messages">
+      <div class="save-bar"><span>Plain text messages sent by the bot.</span><div class="sbtns"><button class="btn btn-p btn-sm" onclick="saveSettings('messages')">Save Messages</button></div></div>
+      <div class="sg">
+        <div class="sg-title">💬 Bot Text Messages</div>
+        <div class="frow c2">
+          <div class="field">
+            <label>Cooldown Message <span style="color:var(--muted);font-weight:400">(use {category}, {time})</span></label>
+            <textarea id="s-cooldownMessage" style="min-height:60px"></textarea>
+          </div>
+          <div class="field">
+            <label>Wrong Channel Message</label>
+            <textarea id="s-wrongChannelMessage" style="min-height:60px"></textarea>
+          </div>
+          <div class="field">
+            <label>DM Fallback Message</label>
+            <input id="s-dmFallbackMessage" placeholder="Shown when DMs are closed">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- STOCK MODAL -->
+<div class="overlay" id="stock-modal">
+  <div class="modal">
+    <button class="mbtn-close" onclick="closeModal('stock-modal')">✕</button>
+    <h3 id="sm-title">Add Stock</h3>
+    <div class="msub" id="sm-sub"></div>
+    <div id="sm-existing-wrap" style="display:none">
+      <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Current Stock</div>
+      <div class="stock-preview" id="sm-existing"></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">New Codes</div>
+    <textarea id="sm-textarea" placeholder="Paste one code per line…"></textarea>
+    <div class="hint">One code per line. Blank lines are ignored.</div>
+    <div class="mactions">
+      <button class="btn btn-o" onclick="closeModal('stock-modal')">Cancel</button>
+      <button class="btn btn-p" onclick="submitStock()">Add Stock</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+let TOKEN = null, currentCat = null, allSettings = {};
+
+// ── Auth ─────────────────────────────────────────────────────────────
+function doLogin(){
+  const pw = document.getElementById('lpw').value;
+  fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})})
+    .then(r=>r.json()).then(d=>{
+      if(d.success){ TOKEN=pw; document.getElementById('login').style.display='none'; document.getElementById('app').style.display='block'; init(); }
+      else showLerr();
+    }).catch(showLerr);
+}
+document.getElementById('lpw').addEventListener('keydown',e=>e.key==='Enter'&&doLogin());
+function showLerr(){ const e=document.getElementById('lerr'); e.style.display='block'; setTimeout(()=>e.style.display='none',3000); }
+function logout(){ TOKEN=null; document.getElementById('login').style.display='flex'; document.getElementById('app').style.display='none'; }
+
+// ── Init ─────────────────────────────────────────────────────────────
+function init(){ loadStock(); loadSettings(); }
+
+// ── Tab switching ─────────────────────────────────────────────────────
+function switchTab(name, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='cooldowns') renderOverrides();
+}
+
+// ── API ──────────────────────────────────────────────────────────────
+function api(method,path,body){
+  return fetch(path,{method,headers:{'Content-Type':'application/json','x-admin-token':TOKEN},body:body?JSON.stringify(body):undefined}).then(r=>r.json());
+}
+
+// ── Stock ─────────────────────────────────────────────────────────────
+function loadStock(){
+  api('GET','/api/categories').then(cats=>{ renderStats(cats); renderTable(cats); });
+}
+
+function renderStats(cats){
+  document.getElementById('s-cats').textContent=cats.length;
+  document.getElementById('s-total').textContent=cats.reduce((a,c)=>a+c.count,0);
+  document.getElementById('s-free').textContent=cats.filter(c=>c.tier==='free').reduce((a,c)=>a+c.count,0);
+  document.getElementById('s-paid').textContent=cats.filter(c=>c.tier==='paid').reduce((a,c)=>a+c.count,0);
+}
+
+function renderTable(cats){
+  const w=document.getElementById('cat-wrap');
+  if(!cats.length){ w.innerHTML='<div class="empty"><div class="ei">📦</div><div class="et">No categories yet</div><div>Add one above to get started.</div></div>'; return; }
+  let h=`<table class="ctable"><thead><tr><th>Name</th><th>Key</th><th>Tier</th><th>Stock</th><th>Actions</th></tr></thead><tbody>`;
+  for(const c of cats){
+    h+=`<tr>
+      <td><strong>${esc(c.label)}</strong></td>
+      <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">${esc(c.key)}</span></td>
+      <td><span class="tbadge ${c.tier}">${c.tier==='free'?'🆓 Free':'💎 Paid'}</span></td>
+      <td><span class="spill${c.count===0?' empty':''}">${c.count} codes</span></td>
+      <td><div class="arow">
+        <button class="btn btn-a btn-sm" onclick="openStockModal('${esc(c.key)}','${esc(c.label)}')">+ Add Stock</button>
+        <button class="btn btn-o btn-sm" onclick="toggleTier('${esc(c.key)}','${c.tier}')">Switch Tier</button>
+        <button class="btn btn-r btn-sm" onclick="deleteCat('${esc(c.key)}','${esc(c.label)}')">Delete</button>
+      </div></td>
+    </tr>`;
+  }
+  w.innerHTML=h+'</tbody></table>';
+}
+
+document.getElementById('nc-label').addEventListener('input',e=>{
+  document.getElementById('nc-key').value=e.target.value.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+});
+
+function addCategory(){
+  const label=document.getElementById('nc-label').value.trim(), key=document.getElementById('nc-key').value.trim(), tier=document.getElementById('nc-tier').value;
+  if(!label||!key) return toast('Fill in name and key.','error');
+  api('POST','/api/categories',{key,label,tier}).then(d=>{ if(d.error) return toast(d.error,'error'); toast(`"${label}" created!`,'success'); document.getElementById('nc-label').value=''; document.getElementById('nc-key').value=''; loadStock(); });
+}
+
+function toggleTier(key,cur){
+  const t=cur==='free'?'paid':'free';
+  api('PATCH',`/api/categories/${key}`,{tier:t}).then(()=>{ toast(`Moved to ${t} tier.`,'success'); loadStock(); });
+}
+
+function deleteCat(key,label){
+  if(!confirm(`Delete "${label}" and all its stock? This cannot be undone.`)) return;
+  api('DELETE',`/api/categories/${key}`).then(()=>{ toast(`"${label}" deleted.`,'success'); loadStock(); });
+}
+
+// ── Stock Modal ───────────────────────────────────────────────────────
+function openStockModal(key,label){
+  currentCat=key;
+  document.getElementById('sm-title').textContent=`Add Stock — ${label}`;
+  document.getElementById('sm-textarea').value='';
+  api('GET',`/api/stock/${key}`).then(cat=>{
+    const w=document.getElementById('sm-existing-wrap');
+    if(cat.stock&&cat.stock.length){ document.getElementById('sm-existing').textContent=cat.stock.join('\n'); document.getElementById('sm-sub').textContent=`${cat.stock.length} codes in stock`; w.style.display='block'; }
+    else{ w.style.display='none'; document.getElementById('sm-sub').textContent='No codes yet'; }
+  });
+  document.getElementById('stock-modal').classList.add('open');
+}
+
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.getElementById('stock-modal').addEventListener('click',e=>{ if(e.target===document.getElementById('stock-modal')) closeModal('stock-modal'); });
+
+function submitStock(){
+  if(!currentCat) return;
+  const codes=document.getElementById('sm-textarea').value.split('\n').map(l=>l.trim()).filter(Boolean);
+  if(!codes.length) return toast('No codes to add.','error');
+  api('POST',`/api/stock/${currentCat}`,{codes}).then(d=>{ if(d.error) return toast(d.error,'error'); toast(`Added ${d.added} code${d.added!==1?'s':''}!`,'success'); closeModal('stock-modal'); loadStock(); });
+}
+
+// ── Settings ──────────────────────────────────────────────────────────
+const FIELDS = ['botName','botActivity','botActivityType','botStatus','freeChannelId','paidChannelId','paidRoleId','freeCooldownMinutes','paidCooldownMinutes','freeEmbedTitle','freeEmbedFooter','freeEmbedColor','paidEmbedTitle','paidEmbedFooter','paidEmbedColor','outOfStockTitle','outOfStockMessage','outOfStockColor','noAccessTitle','noAccessMessage','noAccessColor','confirmEmbedTitle','confirmEmbedMessage','stockEmbedTitle','stockEmbedColor','cooldownMessage','wrongChannelMessage','dmFallbackMessage'];
+const COLOR_FIELDS = ['freeEmbedColor','paidEmbedColor','outOfStockColor','noAccessColor','stockEmbedColor'];
+
+function loadSettings(){
+  api('GET','/api/settings').then(s=>{
+    allSettings=s;
+    for(const k of FIELDS){
+      const el=document.getElementById('s-'+k);
+      if(el) el.value=s[k]??'';
+    }
+    for(const k of COLOR_FIELDS) updateColorUI(k, s[k]||'');
+  });
+}
+
+function gatherSettings(group){
+  const groupFields = {
+    bot:['botName','botActivity','botActivityType','botStatus','freeChannelId','paidChannelId','paidRoleId'],
+    cooldowns:['freeCooldownMinutes','paidCooldownMinutes'],
+    embeds:['freeEmbedTitle','freeEmbedFooter','freeEmbedColor','paidEmbedTitle','paidEmbedFooter','paidEmbedColor','outOfStockTitle','outOfStockMessage','outOfStockColor','noAccessTitle','noAccessMessage','noAccessColor','confirmEmbedTitle','confirmEmbedMessage','stockEmbedTitle','stockEmbedColor'],
+    messages:['cooldownMessage','wrongChannelMessage','dmFallbackMessage']
+  };
+  const keys = groupFields[group]||FIELDS;
+  const out={};
+  for(const k of keys){
+    const el=document.getElementById('s-'+k);
+    if(el) out[k]= el.type==='number' ? Number(el.value) : el.value;
+  }
+  return out;
+}
+
+function saveSettings(group){
+  const data=gatherSettings(group);
+  api('PATCH','/api/settings',data).then(s=>{ allSettings=s; toast('Settings saved!','success'); });
+}
+
+// ── Color sync ────────────────────────────────────────────────────────
+function updateColorUI(key, hex){
+  hex=(hex||'').replace('#','');
+  const inp=document.getElementById('s-'+key);
+  const picker=document.getElementById('s-'+key+'-picker');
+  const prev=document.getElementById('prev-'+key);
+  if(inp) inp.value=hex;
+  if(picker) picker.value='#'+hex.padStart(6,'0');
+  if(prev) prev.style.background='#'+hex;
+}
+function syncColor(key){ const hex=document.getElementById('s-'+key+'-picker').value.replace('#',''); updateColorUI(key,hex); }
+function syncPicker(key){ const hex=document.getElementById('s-'+key).value.replace('#',''); updateColorUI(key,hex); }
+
+// ── Cooldown overrides ────────────────────────────────────────────────
+function renderOverrides(){
+  api('GET','/api/categories').then(cats=>{
+    const s=allSettings||{};
+    const overrides=s.categoryOverrides||{};
+    const w=document.getElementById('override-wrap');
+    if(!cats.length){ w.innerHTML='<div class="empty"><div class="ei">📦</div><div class="et">No categories yet</div></div>'; return; }
+    let h=`<table class="override-table"><tr><th style="text-align:left;padding:6px 4px;font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.6px">Category</th><th style="text-align:left;padding:6px 4px;font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.6px">Tier</th><th style="text-align:left;padding:6px 4px;font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.6px">Override (min)</th></tr>`;
+    for(const c of cats){
+      const val=overrides[c.key]!==undefined?overrides[c.key]:'';
+      h+=`<tr><td style="padding:8px 4px"><strong>${esc(c.label)}</strong> <span style="font-size:11px;color:var(--muted)">${esc(c.key)}</span></td><td><span class="tbadge ${c.tier}">${c.tier}</span></td><td><input type="number" min="0" class="ov-input" data-key="${esc(c.key)}" value="${val}" placeholder="Use global"></td></tr>`;
+    }
+    w.innerHTML=h+'</table>';
+  });
+}
+
+function saveOverrides(){
+  const inputs=document.querySelectorAll('.ov-input');
+  const overrides={};
+  inputs.forEach(inp=>{ if(inp.value!=='') overrides[inp.dataset.key]=Number(inp.value); });
+  api('PATCH','/api/settings',{categoryOverrides:overrides}).then(s=>{ allSettings=s; toast('Overrides saved!','success'); });
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg,type='success'){
+  const el=document.getElementById('toast');
+  el.textContent=(type==='success'?'✓  ':'✕  ')+msg;
+  el.className='show '+type;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.className='',3000);
+}
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+</script>
+</body>
+</html>
